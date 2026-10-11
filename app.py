@@ -27,7 +27,7 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
-
+from symptom_assistant import assistant_bp
 # ---------------------------------------------------------------------------
 # Local imports
 # ---------------------------------------------------------------------------
@@ -43,13 +43,21 @@ load_dotenv()
 # App configuration
 # ---------------------------------------------------------------------------
 app = Flask(__name__)
+app.register_blueprint(assistant_bp)
 app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
 
 # SQLite database stored in instance/ folder (Flask convention)
+
+# SQLite database stored in instance/ folder
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = (
-    "sqlite:///" + os.path.join(BASE_DIR, "instance", "app.db")
-)
+INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
+
+# Create the folder if it does not exist
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+
+DATABASE_PATH = os.path.join(INSTANCE_DIR, "app.db").replace("\\", "/")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DATABASE_PATH}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialise DB
